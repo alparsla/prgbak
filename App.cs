@@ -1,12 +1,14 @@
 ﻿using System;
 using System.IO;
 using static PrgBak.Log;
+using System.Windows.Forms;
 
 namespace PrgBak
 {
-	internal class App
+	internal class App : Form
 	{
 		private static string homePath;
+		private static App appForm;
 		
 		static void Main()
 		{
@@ -15,6 +17,9 @@ namespace PrgBak
 				App.homePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + Path.DirectorySeparatorChar + ".prgbak" + Path.DirectorySeparatorChar;
 				Directory.CreateDirectory(App.homePath);
 				Print("PrgBak started at " + App.HomePath);
+				
+				App.appForm = new App();
+				App.appForm.ShowDialog();
 			}
 			catch (Exception e)
 			{
@@ -24,6 +29,10 @@ namespace PrgBak
 			{
 				Print("PrgBak ended");
 			}
+		}
+		
+		App()
+		{
 		}
 
 		internal static string HomePath
