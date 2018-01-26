@@ -33,6 +33,10 @@ namespace PrgBak
 		
 		App()
 		{
+			var tab = new TabControl();
+			tab.Dock = DockStyle.Fill;
+			this.Controls.Add(tab);
+			
 		}
 
 		internal static string HomePath
