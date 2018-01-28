@@ -30,6 +30,9 @@
   <ItemGroup>
     <Compile Include="App.cs" />
     <Compile Include="Log.cs" />
+    <Compile Include="Backup.cs" />
+    <Compile Include="Target.cs" />
+    <Compile Include="Filter.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
