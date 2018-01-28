@@ -19,6 +19,10 @@ namespace PrgBak
 				Print("PrgBak started at " + App.HomePath);
 				
 				App.appForm = new App();
+				appForm.Text = "Programmer's Backup";
+				appForm.Width = 640;
+				appForm.Height = 480;
+				appForm.CenterToScreen();
 				App.appForm.ShowDialog();
 			}
 			catch (Exception e)
@@ -36,7 +40,8 @@ namespace PrgBak
 			var tab = new TabControl();
 			tab.Dock = DockStyle.Fill;
 			this.Controls.Add(tab);
-			
+		
+			AddLogTab(tab);
 		}
 
 		internal static string HomePath
