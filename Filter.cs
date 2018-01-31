@@ -3,6 +3,7 @@
 // (See accompanying file license.txt file or copy at http://opensource.org/licenses/MIT)
 //
 using System;
+using System.IO;
 
 namespace PrgBak
 {
@@ -37,6 +38,14 @@ namespace PrgBak
 			public override bool Include(string filename)
 			{
 				return filename.ToLowerInvariant().EndsWith(this.extension);
+			}
+		}
+
+		internal class SubDir : Filter
+		{
+			public override bool Include(string filename)
+			{
+				return Directory.Exists(filename);
 			}
 		}
 	}
