@@ -8,7 +8,22 @@ namespace PrgBak
 {
 	internal abstract class Filter
 	{
-		internal abstract bool filter(string filename);
+		internal abstract bool Include(string filename);
+
+		internal virtual bool MustInclude(string filename)
+		{
+			return false;
+		}
+
+		internal virtual bool Exclude(string filename)
+		{
+			return false;
+		}
+
+		internal virtual bool MustExclude(string filename)
+		{
+			return false;
+		}
 	}
 
 }

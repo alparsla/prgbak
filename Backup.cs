@@ -73,17 +73,30 @@ namespace PrgBak
 					continue;
 				}
 
-				bool no = false;
+				bool eliminate = true;
 				foreach (var filter in this.filters)
 				{
-					if (!filter.filter(file))
+					if (filter.MustExclude(file))
 					{
-						no = true;
+						eliminate = true;
 						break;
+					}
+					else if (filter.MustInclude(file))
+					{
+						eliminate = false;
+						break;
+					}
+					else if (filter.Include(file))
+					{
+						eliminate = false;
+					}
+					else if (filter.Exclude(file))
+					{
+						eliminate = true;
 					}
 				}
 
-				if (no)
+				if (eliminate)
 				{
 					continue;	
 				}
