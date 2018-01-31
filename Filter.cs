@@ -24,6 +24,21 @@ namespace PrgBak
 		{
 			return false;
 		}
+
+		internal class Extension : Filter
+		{
+			private string extension;
+
+			internal Extension(string extension)
+			{
+				this.extension = extension.ToLowerInvariant();
+			}
+
+			public override bool Include(string filename)
+			{
+				return filename.ToLowerInvariant().EndsWith(this.extension);
+			}
+		}
 	}
 
 }
