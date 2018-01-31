@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Copyright 2018 Savas Alparslan
+// Distributed under the MIT License.
+// (See accompanying file license.txt file or copy at http://opensource.org/licenses/MIT)
+//
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
