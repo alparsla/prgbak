@@ -6,21 +6,21 @@ using System;
 
 namespace PrgBak
 {
-	internal abstract class Filter
+	public abstract class Filter
 	{
-		internal abstract bool Include(string filename);
+		public abstract bool Include(string filename);
 
-		internal virtual bool MustInclude(string filename)
+		public virtual bool MustInclude(string filename)
 		{
 			return false;
 		}
 
-		internal virtual bool Exclude(string filename)
+		public virtual bool Exclude(string filename)
 		{
 			return false;
 		}
 
-		internal virtual bool MustExclude(string filename)
+		public virtual bool MustExclude(string filename)
 		{
 			return false;
 		}

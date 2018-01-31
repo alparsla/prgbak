@@ -6,8 +6,8 @@ using System;
 
 namespace PrgBak
 {
-	internal abstract class Target
+	public abstract class Target
 	{
-		internal abstract void send(string zippath);
+		public abstract void send(string zippath);
 	}
 }
