@@ -9,7 +9,10 @@ namespace PrgBak
 {
 	public abstract class Filter
 	{
-		public abstract bool Include(string filename);
+		public virtual bool Include(string filename)
+		{
+			return false;
+		}
 
 		public virtual bool MustInclude(string filename)
 		{
@@ -47,6 +50,26 @@ namespace PrgBak
 			{
 				return Directory.Exists(filename);
 			}
+		}
+
+		internal class ExcludeDir : Filter
+		{
+			private string dir;
+
+			internal ExcludeDir(string dir)
+			{
+				this.dir = dir;
+			}
+
+			public override bool MustExclude(string filename)
+			{
+				if (!Directory.Exists(filename))
+				{
+					return false;
+				}
+
+				return Path.GetFileName(filename).Equals(this.dir);
+			}	
 		}
 	}
 
