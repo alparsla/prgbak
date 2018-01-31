@@ -44,7 +44,7 @@ namespace PrgBak
 			}
 		}
 
-		internal class SubDir : Filter
+		internal class IncludeSubFolders : Filter
 		{
 			public override bool Include(string filename)
 			{
@@ -52,13 +52,13 @@ namespace PrgBak
 			}
 		}
 
-		internal class ExcludeDir : Filter
+		internal class ExcludeFolder : Filter
 		{
-			private string dir;
+			private string folder;
 
-			internal ExcludeDir(string dir)
+			internal ExcludeFolder(string folder)
 			{
-				this.dir = dir;
+				this.folder = folder;
 			}
 
 			public override bool MustExclude(string filename)
@@ -68,7 +68,7 @@ namespace PrgBak
 					return false;
 				}
 
-				return Path.GetFileName(filename).Equals(this.dir);
+				return Path.GetFileName(filename).Equals(this.folder);
 			}	
 		}
 	}
