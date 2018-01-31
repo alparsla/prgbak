@@ -73,32 +73,9 @@ namespace PrgBak
 					continue;
 				}
 
-				bool eliminate = true;
-				foreach (var filter in this.filters)
+				if (Eliminate(file))
 				{
-					if (filter.MustExclude(file))
-					{
-						eliminate = true;
-						break;
-					}
-					else if (filter.MustInclude(file))
-					{
-						eliminate = false;
-						break;
-					}
-					else if (filter.Include(file))
-					{
-						eliminate = false;
-					}
-					else if (filter.Exclude(file))
-					{
-						eliminate = true;
-					}
-				}
-
-				if (eliminate)
-				{
-					continue;	
+					continue;
 				}
 
 				var bytes = File.ReadAllBytes(file);
@@ -111,8 +88,39 @@ namespace PrgBak
 			var dirs = Directory.GetDirectories(folder);
 			foreach (var dir in dirs)
 			{
+				if (Eliminate(dir))
+				{
+					continue;
+				}
+
 				ZipFolder(zip, dir, time);
 			}
+		}
+
+		private bool Eliminate(string filename)
+		{
+			bool eliminate = true;
+			foreach (var filter in this.filters)
+			{
+				if (filter.MustExclude(filename))
+				{
+					return true;
+				}
+				else if (filter.MustInclude(filename))
+				{
+					return false;
+				}
+				else if (filter.Include(filename))
+				{
+					eliminate = false;
+				}
+				else if (filter.Exclude(filename))
+				{
+					eliminate = true;
+				}
+			}
+
+			return eliminate;
 		}
 
 		internal void AddFilter(Filter filter)
