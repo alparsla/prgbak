@@ -9,7 +9,7 @@ using System.Text;
 
 namespace PrgBak
 {
-	internal class Log
+	public class Log
 	{
 		private static FileStream stream;
 		private static ListBox listbox;
@@ -19,7 +19,7 @@ namespace PrgBak
 			stream = new FileStream(App.HomePath + "prgbak.log", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
 		}
 		
-		internal static void Print(object o)
+		public static void Print(object o)
 		{
 			var line = DateTime.UtcNow + " " + o + "\n";
 			var bytes = Encoding.UTF8.GetBytes(line);
