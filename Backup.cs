@@ -49,6 +49,13 @@ namespace PrgBak
 			zip.Dispose();
 			fs.Flush();
 			fs.Close();
+
+			foreach (var target in this.targets)
+			{
+				target.send(filename);
+			}
+
+
 			Print("Backup ended successfully");
 			return true;
 		}
