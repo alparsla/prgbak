@@ -77,17 +77,22 @@ namespace PrgBak
 
 			TableLayoutPanel table = new TableLayoutPanel();
 			table.Dock = DockStyle.Fill;
-			table.ColumnCount = 1;
+			table.ColumnCount = 2;
 			table.RowCount = 2;
 
-			var list = new ListBox();
+			table.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
+			table.RowStyles.Add(new RowStyle(SizeType.Percent, 70));
+
+			table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 80));
+			table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+
+			var list = new ListView();
 			list.Dock = DockStyle.Fill;
 			table.Controls.Add(list);
 			table.SetRow(list, 0);
 			table.SetColumn(list, 0);
+			table.SetColumnSpan(list, 2);
 
-			table.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
-			table.RowStyles.Add(new RowStyle(SizeType.Percent, 70));
 
 			page.Controls.Add(table);
 
@@ -155,11 +160,40 @@ namespace PrgBak
 			button.Width = 150;
 			button.Click += (sender, e) => DoBackup(false);
 			panel.Controls.Add(button);
+
+			panel = new FlowLayoutPanel();
+			panel.FlowDirection = FlowDirection.TopDown;
+			panel.Dock = DockStyle.Fill;
+			table.Controls.Add(panel);
+			table.SetRow(panel, 1);
+			table.SetColumn(panel, 1);
+
+			button = new Button();
+			button.Text = "New";
+			button.Width = 100;
+			button.Click += (sender, e) => New();
+			panel.Controls.Add(button);
+
+			button = new Button();
+			button.Text = "Delete";
+			button.Width = 100;
+			button.Click += (sender, e) => Delete();
+			panel.Controls.Add(button);
 		}
 
 		private void DoBackup(bool full)
 		{
 			MessageBox.Show("Hello");
+		}
+
+		private void New()
+		{
+			MessageBox.Show("New");
+		}
+
+		private void Delete()
+		{
+			MessageBox.Show("Delete");
 		}
 	}
 }
