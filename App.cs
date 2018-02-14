@@ -19,6 +19,7 @@ namespace PrgBak
 		private IList<Backup> backups;
 
 		// Form
+		private ListView listView;
 		private TextBox backupName;
 		private TextBox sourceFolder;
 		private TextBox destFolder;
@@ -86,12 +87,19 @@ namespace PrgBak
 			table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 80));
 			table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
 
-			var list = new ListView();
-			list.Dock = DockStyle.Fill;
-			table.Controls.Add(list);
-			table.SetRow(list, 0);
-			table.SetColumn(list, 0);
-			table.SetColumnSpan(list, 2);
+			this.listView = new ListView();
+			this.listView .Dock = DockStyle.Fill;
+			table.Controls.Add(this.listView );
+			table.SetRow(this.listView , 0);
+			table.SetColumn(this.listView , 0);
+			table.SetColumnSpan(this.listView , 2);
+
+			this.listView .HeaderStyle = ColumnHeaderStyle.Clickable;
+			this.listView .FullRowSelect = true;
+			this.listView .View = View.Details;
+			this.listView .Columns.Add("name", "Name", 140);
+			this.listView .Columns.Add("source", "Source Folder", 320);
+			this.listView .Columns.Add("date", "Last Backup", 140);
 
 
 			page.Controls.Add(table);
