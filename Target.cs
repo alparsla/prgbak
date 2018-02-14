@@ -22,6 +22,14 @@ namespace PrgBak
 				this.dayFolder = dayFolder;
 			}
 
+			internal string FolderPath
+			{
+				get
+				{
+					return this.folder;
+				}
+			}
+
 			public override void send(string zippath)
 			{
 				var now = DateTime.Now;

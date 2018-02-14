@@ -17,6 +17,7 @@ namespace PrgBak
 		private static App appForm;
 
 		private IList<Backup> backups;
+		private Backup current;
 
 		// Form
 		private ListView listView;
@@ -196,12 +197,51 @@ namespace PrgBak
 
 		private void New()
 		{
-			MessageBox.Show("New");
+			this.current = new Backup();
+			this.backups.Add(this.current);
+			AddToList(this.current);
 		}
 
 		private void Delete()
 		{
 			MessageBox.Show("Delete");
+		}
+
+		private void AddToList(Backup backup)
+		{
+			this.listView.Items.Add(BackupToListViewItem(backup));
+		}
+
+		private ListViewItem BackupToListViewItem(Backup backup)
+		{
+			var lvi = new ListViewItem();
+			lvi.Tag = backup;
+			lvi.Text = backup.Name;
+
+			if (backup.Targets.Count > 0)
+			{
+				if (backup.Targets.Count > 1)
+				{
+					throw new ApplicationException("Backup " + backup.Name + " has " + 
+					                               backup.Targets.Count + " targets and it is not supported yet");
+				}
+				lvi.SubItems.Add((backup.Targets[0] as Target.Folder).FolderPath);
+			}
+			else
+			{
+				lvi.SubItems.Add("<empty path>");
+			}
+
+			if (backup.LastBackup != 0)
+			{
+				lvi.SubItems.Add(DateTime.FromBinary(backup.LastBackup).ToLongDateString());
+			}
+			else
+			{
+				lvi.SubItems.Add("<not backed up yet>");
+			}
+
+			return lvi;
 		}
 	}
 }

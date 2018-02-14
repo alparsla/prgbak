@@ -17,12 +17,45 @@ namespace PrgBak
 		private string zipname;
 		private IList<Filter> filters;
 		private string folder;
-		private IList<Target> targets;
+		private List<Target> targets;
+		private long lastBackup;
 
 		internal Backup()
 		{
 			this.filters = new List<Filter>();
 			this.targets = new List<Target>();
+		}
+
+		internal string Name
+		{
+			get
+			{
+				return this.name;
+			}
+		}
+
+		internal long LastBackup
+		{
+			get
+			{
+				return this.lastBackup;
+			}
+		}
+
+		internal string Folder
+		{
+			get
+			{
+				return this.folder;
+			}
+		}
+
+		internal IList<Target> Targets
+		{
+			get
+			{
+				return this.targets.AsReadOnly();
+			}
 		}
 
 		internal bool Do(long time)
@@ -55,6 +88,7 @@ namespace PrgBak
 				target.send(filename);
 			}
 
+			this.lastBackup = DateTime.Now.ToBinary();
 
 			Print("Backup ended successfully");
 			return true;
