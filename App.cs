@@ -21,6 +21,7 @@ namespace PrgBak
 
 		// Form
 		private ListView listView;
+		private FlowLayoutPanel editPanel;
 		private TextBox backupName;
 		private TextBox sourceFolder;
 		private TextBox destFolder;
@@ -105,12 +106,12 @@ namespace PrgBak
 
 			page.Controls.Add(table);
 
-			var panel = new FlowLayoutPanel();
-			panel.FlowDirection = FlowDirection.TopDown;
-			panel.Dock = DockStyle.Fill;
-			table.Controls.Add(panel);
-			table.SetRow(panel, 1);
-			table.SetColumn(panel, 0);
+			this.editPanel = new FlowLayoutPanel();
+			this.editPanel.FlowDirection = FlowDirection.TopDown;
+			this.editPanel.Dock = DockStyle.Fill;
+			table.Controls.Add(this.editPanel);
+			table.SetRow(this.editPanel, 1);
+			table.SetColumn(this.editPanel, 0);
 
 			Label label;
 
@@ -118,59 +119,71 @@ namespace PrgBak
 			label.Text = "Name of the zip file";
 			label.Width = 200;
 			label.TextAlign = ContentAlignment.BottomLeft;
-			panel.Controls.Add(label);
+			this.editPanel.Controls.Add(label);
 
 			this.backupName = new TextBox();
 			this.backupName.Width = 300;
-			panel.Controls.Add(this.backupName);
+			this.editPanel.Controls.Add(this.backupName);
 
 			label = new Label();
 			label.Text = "Source Folder";
 			label.TextAlign = ContentAlignment.BottomLeft;
-			panel.Controls.Add(label);
+			this.editPanel.Controls.Add(label);
 			this.sourceFolder = new TextBox();
 			this.sourceFolder.Width = 300;
-			panel.Controls.Add(this.sourceFolder);
+			this.editPanel.Controls.Add(this.sourceFolder);
 
 			label = new Label();
 			label.Text = "Dest Folder";
 			label.TextAlign = ContentAlignment.BottomLeft;
-			panel.Controls.Add(label);
+			this.editPanel.Controls.Add(label);
 			this.destFolder = new TextBox();
 			this.destFolder.Width = 300;
-			panel.Controls.Add(this.destFolder);
+			this.editPanel.Controls.Add(this.destFolder);
 
 			label = new Label();
 			label.Text = "Extensions (comma separated)";
 			label.Width = 200;
 			label.TextAlign = ContentAlignment.BottomLeft;
-			panel.Controls.Add(label);
+			this.editPanel.Controls.Add(label);
 			this.extensions = new TextBox();
 			this.extensions.Width = 300;
-			panel.Controls.Add(this.extensions);
+			this.editPanel.Controls.Add(this.extensions);
 
 			Button button = new Button();
 			button.Text = "Do Full Backup";
 			button.Width = 150;
 			button.Click += (sender, e) => DoBackup(true);
-			panel.Controls.Add(button);
+			this.editPanel.Controls.Add(button);
 
 			label = new Label();
 			label.Text = "Last Backup Date";
 			label.Width = 100;
 			label.TextAlign = ContentAlignment.BottomLeft;
-			panel.Controls.Add(label);
+			this.editPanel.Controls.Add(label);
 			this.lastBackup = new TextBox();
 			this.lastBackup.Width = 200;
-			panel.Controls.Add(this.lastBackup);
+			this.editPanel.Controls.Add(this.lastBackup);
 
 			button = new Button();
 			button.Text = "Backup Diff";
 			button.Width = 150;
 			button.Click += (sender, e) => DoBackup(false);
-			panel.Controls.Add(button);
+			this.editPanel.Controls.Add(button);
 
-			panel = new FlowLayoutPanel();
+			if (this.backups.Count == 0)
+			{
+				foreach (Control ctrl in this.editPanel.Controls)
+				{
+					ctrl.Enabled = false;
+				}
+			}
+			else
+			{
+				this.listView.FocusedItem = this.listView.Items[0];
+			}
+
+			var panel = new FlowLayoutPanel();
 			panel.FlowDirection = FlowDirection.TopDown;
 			panel.Dock = DockStyle.Fill;
 			table.Controls.Add(panel);
@@ -188,6 +201,7 @@ namespace PrgBak
 			button.Width = 100;
 			button.Click += (sender, e) => Delete();
 			panel.Controls.Add(button);
+
 		}
 
 		private void DoBackup(bool full)
