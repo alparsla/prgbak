@@ -122,6 +122,7 @@ namespace PrgBak
 			this.editPanel.Controls.Add(label);
 
 			this.backupName = new TextBox();
+			this.backupName.TextChanged += (sender, e) => HandleEditChange(this.backupName.Text, -1);
 			this.backupName.Width = 300;
 			this.editPanel.Controls.Add(this.backupName);
 
@@ -130,6 +131,7 @@ namespace PrgBak
 			label.TextAlign = ContentAlignment.BottomLeft;
 			this.editPanel.Controls.Add(label);
 			this.sourceFolder = new TextBox();
+			this.sourceFolder.TextChanged += (sender, e) => HandleEditChange(this.sourceFolder.Text, 1);
 			this.sourceFolder.Width = 300;
 			this.editPanel.Controls.Add(this.sourceFolder);
 
@@ -204,6 +206,19 @@ namespace PrgBak
 
 		}
 
+		private void HandleEditChange(string text, int index)
+		{
+			if (index == -1)
+			{
+				this.listView.FocusedItem.Text = text;
+			}
+			else
+			{
+				this.listView.FocusedItem.SubItems[index].Text = text;
+				this.listView.Refresh();
+			}
+		}
+
 		private void DoBackup(bool full)
 		{
 			MessageBox.Show("Hello");
@@ -214,6 +229,11 @@ namespace PrgBak
 			this.current = new Backup();
 			this.backups.Add(this.current);
 			AddToList(this.current);
+
+			foreach (Control ctrl in this.editPanel.Controls)
+			{
+				ctrl.Enabled = true;
+			}
 		}
 
 		private void Delete()
@@ -223,7 +243,9 @@ namespace PrgBak
 
 		private void AddToList(Backup backup)
 		{
-			this.listView.Items.Add(BackupToListViewItem(backup));
+			var item = BackupToListViewItem(backup);
+			this.listView.Items.Add(item);
+			this.listView.FocusedItem = item;
 		}
 
 		private ListViewItem BackupToListViewItem(Backup backup)
