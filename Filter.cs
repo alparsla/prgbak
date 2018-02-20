@@ -4,6 +4,7 @@
 //
 using System;
 using System.IO;
+using System.Xml;
 
 namespace PrgBak
 {
@@ -29,6 +30,22 @@ namespace PrgBak
 			return false;
 		}
 
+		public abstract void ToXml(XmlWriter xw);
+
+		internal static Filter FromXml(XmlCursor xr)
+		{
+			if (xr.IsElement("extension"))
+			{
+				return new Extension(xr);
+			}
+			else
+			{
+				xr.UnexpectedElement();
+				return null;
+			}
+		}
+
+
 		internal class Extension : Filter
 		{
 			private string extension;
@@ -36,6 +53,26 @@ namespace PrgBak
 			internal Extension(string extension)
 			{
 				this.extension = extension.ToLowerInvariant();
+			}
+
+			internal string Ext
+			{
+				get
+				{
+					return this.extension;
+				}
+			}
+
+			internal Extension(XmlCursor xr)
+			{
+				this.extension = xr.Text;
+			}
+
+			public override void ToXml(XmlWriter xw)
+			{
+				xw.WriteStartElement("extension");
+				xw.WriteCData(this.extension);
+				xw.WriteEndElement();
 			}
 
 			public override bool Include(string filename)
@@ -50,11 +87,21 @@ namespace PrgBak
 			{
 				return Directory.Exists(filename);
 			}
+
+			public override void ToXml(XmlWriter xw)
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 		internal class ExcludeFolder : Filter
 		{
 			private string folder;
+
+			public override void ToXml(XmlWriter xw)
+			{
+				throw new NotImplementedException();
+			}
 
 			internal ExcludeFolder(string folder)
 			{

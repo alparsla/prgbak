@@ -4,13 +4,29 @@
 //
 using System;
 using System.IO;
+using System.Xml;
 
 namespace PrgBak
 {
 	public abstract class Target
 	{
 		public abstract void send(string zippath);
-	
+
+		public abstract void ToXml(XmlWriter xw);
+
+		internal static Target FromXml(XmlCursor xr)
+		{
+			if (xr.IsElement("folder"))
+			{
+				return new Folder(xr);
+			}
+			else
+			{
+				xr.UnexpectedElement();
+				return null;
+			}
+		}
+
 		internal class Folder : Target
 		{
 			private string folder;
@@ -20,6 +36,19 @@ namespace PrgBak
 			{
 				this.folder = folder;
 				this.dayFolder = dayFolder;
+			}
+
+			internal Folder(XmlCursor xr)
+			{
+				this.dayFolder = true;
+				this.folder = xr.Text;
+			}
+
+			public override void ToXml(XmlWriter xw)
+			{
+				xw.WriteStartElement("folder");
+				xw.WriteCData(this.folder);
+				xw.WriteEndElement();
 			}
 
 			internal string FolderPath

@@ -16,7 +16,7 @@ namespace PrgBak
 	{
 		private string name;
 		private string zipname;
-		private IList<Filter> filters;
+		private List<Filter> filters;
 		private string folder;
 		private List<Target> targets;
 		private long lastBackup;
@@ -40,6 +40,36 @@ namespace PrgBak
 				{
 					this.name = xr.Text;
 				}
+				else if (xr.IsElement("folder"))
+				{
+					this.folder = xr.Text;
+				}
+				else if (xr.IsElement("lastBackup"))
+				{
+					this.lastBackup = long.Parse(xr.Text);
+				}
+				else if (xr.IsElement("filters"))
+				{
+					if (xr.MoveIn())
+					{
+						while (xr.MoveNext())
+						{
+							AddFilter(Filter.FromXml(xr));
+						}
+						xr.MoveOut();	
+					}
+				}
+				else if (xr.IsElement("targets"))
+				{
+					if (xr.MoveIn())
+					{
+						while (xr.MoveNext())
+						{
+							AddTarget(Target.FromXml(xr));
+						}
+						xr.MoveOut();	
+					}
+				}
 				else
 				{
 					xr.UnexpectedElement();
@@ -55,6 +85,28 @@ namespace PrgBak
 
 			xw.WriteStartElement("name");
 			xw.WriteCData(this.name);
+			xw.WriteEndElement();
+
+			xw.WriteStartElement("folder");
+			xw.WriteCData(this.folder);
+			xw.WriteEndElement();
+
+			xw.WriteStartElement("lastBackup");
+			xw.WriteCData(this.lastBackup.ToString());
+			xw.WriteEndElement();
+
+			xw.WriteStartElement("filters");
+			foreach (var filter in this.filters)
+			{
+				filter.ToXml(xw);
+			}
+			xw.WriteEndElement();
+
+			xw.WriteStartElement("targets");
+			foreach (var target in this.targets)
+			{
+				target.ToXml(xw);
+			}
 			xw.WriteEndElement();
 
 			xw.WriteEndElement(); // <backup>
@@ -79,6 +131,11 @@ namespace PrgBak
 			{
 				return this.lastBackup;
 			}
+
+			set
+			{
+				this.lastBackup = value;
+			}
 		}
 
 		internal string Folder
@@ -86,6 +143,11 @@ namespace PrgBak
 			get
 			{
 				return this.folder;
+			}
+
+			set
+			{
+				this.folder = value;
 			}
 		}
 
@@ -95,6 +157,24 @@ namespace PrgBak
 			{
 				return this.targets.AsReadOnly();
 			}
+		}
+
+		internal IList<Filter> Filters
+		{
+			get
+			{
+				return this.filters.AsReadOnly();
+			}
+		}
+
+		internal void ClearFilters()
+		{
+			this.filters.Clear();
+		}
+
+		internal void ClearTargets()
+		{
+			this.targets.Clear();
 		}
 
 		internal bool Do(long time)

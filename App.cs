@@ -416,6 +416,27 @@ namespace PrgBak
 			{
 				this.loading = true;
 				this.backupName.Text = backup.Name;
+				this.sourceFolder.Text = backup.Folder;
+				if (backup.Targets.Count > 0)
+				{
+					this.destFolder.Text = (backup.Targets[0] as Target.Folder).FolderPath;
+				}
+
+				string extensions = "";
+				bool first = true;
+				foreach (var filter in backup.Filters)
+				{
+					if (first)
+					{
+						first = false;
+					}
+					else
+					{
+						extensions += ", ";
+					}
+					extensions += (filter as Filter.Extension).Ext;
+				}
+				this.extensions.Text = extensions;
 			}
 			finally
 			{
@@ -426,7 +447,27 @@ namespace PrgBak
 
 		private void ReflectChanges()
 		{
-			this.backups[this.selectedIndex].Name = this.backupName.Text;
+			Backup backup = this.backups[this.selectedIndex];
+
+			backup.Name = this.backupName.Text;
+			backup.Folder = this.sourceFolder.Text;
+
+			backup.LastBackup = 0;
+			if (this.lastBackup.Text.Length > 0)
+			{
+				backup.LastBackup = long.Parse(this.lastBackup.Text);
+			}
+
+			backup.ClearFilters();
+			char[] seps = {','};
+			string[] exts = this.extensions.Text.Split(seps);
+			foreach (var ext in exts)
+			{
+				backup.AddFilter(new Filter.Extension(ext.Trim()));
+			}
+
+			backup.ClearTargets();
+			backup.AddTarget(new Target.Folder(this.destFolder.Text, true));
 		}
 	}
 }
