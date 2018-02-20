@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Xml;
 using static PrgBak.Log;
 
 namespace PrgBak
@@ -26,11 +27,49 @@ namespace PrgBak
 			this.targets = new List<Target>();
 		}
 
+		internal Backup(XmlCursor xr) : this()
+		{
+			if (!xr.MoveIn())
+			{
+				throw new XmlException("<backup> should have sub items");
+			}
+
+			while (xr.MoveNext())
+			{
+				if (xr.IsElement("name"))
+				{
+					this.name = xr.Text;
+				}
+				else
+				{
+					xr.UnexpectedElement();
+				}
+			}
+
+			xr.MoveOut();
+		}
+
+		internal void ToXml(XmlWriter xw)
+		{
+			xw.WriteStartElement("backup");
+
+			xw.WriteStartElement("name");
+			xw.WriteCData(this.name);
+			xw.WriteEndElement();
+
+			xw.WriteEndElement(); // <backup>
+		}
+
 		internal string Name
 		{
 			get
 			{
 				return this.name;
+			}
+
+			set
+			{
+				this.name = value;
 			}
 		}
 

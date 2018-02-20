@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using static PrgBak.Log;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Xml;
 
 namespace PrgBak
 {
@@ -27,6 +28,9 @@ namespace PrgBak
 		private TextBox destFolder;
 		private TextBox extensions;
 		private TextBox lastBackup;
+		private bool dirty;
+		private bool loading;
+		private int selectedIndex;
 
 		static void Main()
 		{
@@ -42,6 +46,12 @@ namespace PrgBak
 				appForm.Height = 540;
 				appForm.CenterToScreen();
 				App.appForm.ShowDialog();
+
+				if (appForm.dirty)
+				{
+					App.appForm.ReflectChanges();
+					App.appForm.WritePrgBakXml();
+				}
 			}
 			catch (Exception e)
 			{
@@ -60,6 +70,7 @@ namespace PrgBak
 			this.Controls.Add(tab);
 
 			this.backups = new List<Backup>();
+			ReadPrgBakXml();
 
 			AddBackupTab(tab);
 			AddLogTab(tab);
@@ -72,6 +83,83 @@ namespace PrgBak
 				return App.homePath;				
 			}
 		}
+
+		private void ReadPrgBakXml()
+		{
+			string path = homePath + "prgbak.xml";
+			if (!File.Exists(path))
+			{
+				return;
+			}
+
+			var xml = File.ReadAllText(path);
+			var xr = new XmlCursor(xml);
+			if (!xr.MoveNext())
+			{
+				throw new XmlException(path + " is not a valid xml file");
+			}
+
+			if (!xr.IsElement("prgbak"))
+			{
+				xr.UnexpectedElement();
+			}
+
+			if (xr.MoveIn())
+			{
+				while (xr.MoveNext())
+				{
+					if (xr.IsElement("backups"))
+					{
+						if (xr.MoveIn())
+						{
+							while (xr.MoveNext())
+							{
+								if (xr.IsElement("backup"))
+								{
+									this.backups.Add(new Backup(xr));
+								}
+							}
+
+							xr.MoveOut();
+						}
+					}
+					else
+					{
+						xr.UnexpectedElement();
+					}
+				}
+
+				xr.MoveOut();
+			} // Move into <prgbak>
+		}
+
+		private void WritePrgBakXml()
+		{
+			var ms = new MemoryStream();
+			XmlTextWriter xw = new XmlTextWriter(new StreamWriter(ms));
+			xw.Formatting = Formatting.Indented;
+
+			xw.WriteStartDocument(true);
+			xw.WriteStartElement("prgbak");
+
+			xw.WriteStartElement("backups");
+			foreach (var backup in this.backups)
+			{
+				backup.ToXml(xw);
+			}
+			xw.WriteEndElement();
+
+			xw.WriteEndElement(); // <prgbak>
+			xw.WriteEndDocument();
+			xw.Flush();
+
+			string path = homePath + "prgbak.xml";
+			Print("Writing " + path);
+			File.WriteAllBytes(path, ms.GetBuffer());
+
+			this.dirty = false;
+		}
+
 
 		void AddBackupTab(TabControl tab)
 		{
@@ -90,6 +178,7 @@ namespace PrgBak
 			table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
 
 			this.listView = new ListView();
+			this.listView.SelectedIndexChanged += (sender, e) => HandleSelectedIndexChanged();
 			this.listView .Dock = DockStyle.Fill;
 			table.Controls.Add(this.listView );
 			table.SetRow(this.listView , 0);
@@ -123,6 +212,7 @@ namespace PrgBak
 
 			this.backupName = new TextBox();
 			this.backupName.TextChanged += (sender, e) => HandleEditChange(this.backupName.Text, -1);
+			this.backupName.TextChanged += (sender, e) => SetDirty();
 			this.backupName.Width = 300;
 			this.editPanel.Controls.Add(this.backupName);
 
@@ -132,6 +222,7 @@ namespace PrgBak
 			this.editPanel.Controls.Add(label);
 			this.sourceFolder = new TextBox();
 			this.sourceFolder.TextChanged += (sender, e) => HandleEditChange(this.sourceFolder.Text, 1);
+			this.sourceFolder.TextChanged += (sender, e) => SetDirty();
 			this.sourceFolder.Width = 300;
 			this.editPanel.Controls.Add(this.sourceFolder);
 
@@ -149,6 +240,7 @@ namespace PrgBak
 			label.TextAlign = ContentAlignment.BottomLeft;
 			this.editPanel.Controls.Add(label);
 			this.extensions = new TextBox();
+			this.extensions.TextChanged += (sender, e) => SetDirty();
 			this.extensions.Width = 300;
 			this.editPanel.Controls.Add(this.extensions);
 
@@ -164,6 +256,7 @@ namespace PrgBak
 			label.TextAlign = ContentAlignment.BottomLeft;
 			this.editPanel.Controls.Add(label);
 			this.lastBackup = new TextBox();
+			this.lastBackup.TextChanged += (sender, e) => SetDirty();
 			this.lastBackup.Width = 200;
 			this.editPanel.Controls.Add(this.lastBackup);
 
@@ -175,6 +268,7 @@ namespace PrgBak
 
 			if (this.backups.Count == 0)
 			{
+				this.selectedIndex = -1;
 				foreach (Control ctrl in this.editPanel.Controls)
 				{
 					ctrl.Enabled = false;
@@ -182,6 +276,12 @@ namespace PrgBak
 			}
 			else
 			{
+				foreach (var backup in this.backups)
+				{
+					AddToList(backup);
+				}
+
+				LoadBackup(this.backups[0]);
 				this.listView.FocusedItem = this.listView.Items[0];
 			}
 
@@ -208,6 +308,11 @@ namespace PrgBak
 
 		private void HandleEditChange(string text, int index)
 		{
+			if (this.loading)
+			{
+				return;
+			}
+
 			if (index == -1)
 			{
 				this.listView.FocusedItem.Text = text;
@@ -217,6 +322,16 @@ namespace PrgBak
 				this.listView.FocusedItem.SubItems[index].Text = text;
 				this.listView.Refresh();
 			}
+		}
+
+		private void SetDirty()
+		{
+			if (this.loading)
+			{
+				return;
+			}
+
+			this.dirty = true;
 		}
 
 		private void DoBackup(bool full)
@@ -229,6 +344,9 @@ namespace PrgBak
 			this.current = new Backup();
 			this.backups.Add(this.current);
 			AddToList(this.current);
+
+			this.selectedIndex = this.listView.FocusedItem.Index;
+			LoadBackup(this.backups[this.selectedIndex]);
 
 			foreach (Control ctrl in this.editPanel.Controls)
 			{
@@ -278,6 +396,37 @@ namespace PrgBak
 			}
 
 			return lvi;
+		}
+
+		private void HandleSelectedIndexChanged()
+		{
+			if (this.dirty)
+			{
+				ReflectChanges();
+				WritePrgBakXml(); // Save it instantly
+			}
+
+			this.selectedIndex = this.listView.FocusedItem.Index;
+			LoadBackup(this.backups[this.selectedIndex]);
+		}
+
+		private void LoadBackup(Backup backup)
+		{
+			try
+			{
+				this.loading = true;
+				this.backupName.Text = backup.Name;
+			}
+			finally
+			{
+				this.loading = false;
+			}
+
+		}
+
+		private void ReflectChanges()
+		{
+			this.backups[this.selectedIndex].Name = this.backupName.Text;
 		}
 	}
 }
