@@ -356,7 +356,45 @@ namespace PrgBak
 
 		private void Delete()
 		{
-			MessageBox.Show("Delete");
+			if (this.selectedIndex == -1)
+			{
+				return;
+			}
+
+			SetDirty();
+
+			this.loading = true;
+			this.backups.RemoveAt(this.selectedIndex);
+			this.listView.Items.RemoveAt(this.selectedIndex);
+
+			if (this.selectedIndex == 0)
+			{
+				if (this.backups.Count == 0)
+				{
+					this.selectedIndex = -1;
+				}
+			}
+			else if (this.selectedIndex > this.backups.Count - 2)
+			{
+				this.selectedIndex--;
+			}
+
+			this.loading = false;
+
+			WritePrgBakXml();
+
+			if (this.selectedIndex != -1)
+			{
+				this.listView.FocusedItem = this.listView.Items[this.selectedIndex];
+				ReflectChanges();
+			}
+			else
+			{
+				foreach (Control ctrl in this.editPanel.Controls)
+				{
+					ctrl.Enabled = false;
+				}
+			}
 		}
 
 		private void AddToList(Backup backup)
@@ -400,6 +438,11 @@ namespace PrgBak
 
 		private void HandleSelectedIndexChanged()
 		{
+			if (this.loading)
+			{
+				return;
+			}
+
 			if (this.dirty)
 			{
 				ReflectChanges();
