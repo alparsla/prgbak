@@ -22,15 +22,8 @@ namespace PrgBak
 
 		// Form
 		private ListView listView;
-		private FlowLayoutPanel editPanel;
-		private TextBox backupName;
-		private TextBox sourceFolder;
-		private TextBox destFolder;
-		private TextBox extensions;
-		private TextBox lastBackup;
-		private bool dirty;
-		private bool loading;
 		private int selectedIndex;
+		private BackupEditPanel editPanel;
 
 		static void Main()
 		{
@@ -47,7 +40,7 @@ namespace PrgBak
 				appForm.CenterToScreen();
 				App.appForm.ShowDialog();
 
-				if (appForm.dirty)
+				if (appForm.editPanel.Dirty)
 				{
 					App.appForm.ReflectChanges();
 					App.appForm.WritePrgBakXml();
@@ -157,7 +150,7 @@ namespace PrgBak
 			Print("Writing " + path);
 			File.WriteAllBytes(path, ms.GetBuffer());
 
-			this.dirty = false;
+			this.editPanel.Undirty();
 		}
 
 
@@ -195,84 +188,17 @@ namespace PrgBak
 
 			page.Controls.Add(table);
 
-			this.editPanel = new FlowLayoutPanel();
+			this.editPanel = new BackupEditPanel(this);
 			this.editPanel.FlowDirection = FlowDirection.TopDown;
 			this.editPanel.Dock = DockStyle.Fill;
 			table.Controls.Add(this.editPanel);
 			table.SetRow(this.editPanel, 1);
 			table.SetColumn(this.editPanel, 0);
 
-			Label label;
-
-			label = new Label();
-			label.Text = "Name of the zip file";
-			label.Width = 200;
-			label.TextAlign = ContentAlignment.BottomLeft;
-			this.editPanel.Controls.Add(label);
-
-			this.backupName = new TextBox();
-			this.backupName.TextChanged += (sender, e) => HandleEditChange(this.backupName.Text, -1);
-			this.backupName.TextChanged += (sender, e) => SetDirty();
-			this.backupName.Width = 300;
-			this.editPanel.Controls.Add(this.backupName);
-
-			label = new Label();
-			label.Text = "Source Folder";
-			label.TextAlign = ContentAlignment.BottomLeft;
-			this.editPanel.Controls.Add(label);
-			this.sourceFolder = new TextBox();
-			this.sourceFolder.TextChanged += (sender, e) => HandleEditChange(this.sourceFolder.Text, 1);
-			this.sourceFolder.TextChanged += (sender, e) => SetDirty();
-			this.sourceFolder.Width = 300;
-			this.editPanel.Controls.Add(this.sourceFolder);
-
-			label = new Label();
-			label.Text = "Dest Folder";
-			label.TextAlign = ContentAlignment.BottomLeft;
-			this.editPanel.Controls.Add(label);
-			this.destFolder = new TextBox();
-			this.destFolder.Width = 300;
-			this.editPanel.Controls.Add(this.destFolder);
-
-			label = new Label();
-			label.Text = "Extensions (comma separated)";
-			label.Width = 200;
-			label.TextAlign = ContentAlignment.BottomLeft;
-			this.editPanel.Controls.Add(label);
-			this.extensions = new TextBox();
-			this.extensions.TextChanged += (sender, e) => SetDirty();
-			this.extensions.Width = 300;
-			this.editPanel.Controls.Add(this.extensions);
-
-			Button button = new Button();
-			button.Text = "Do Full Backup";
-			button.Width = 150;
-			button.Click += (sender, e) => DoBackup(true);
-			this.editPanel.Controls.Add(button);
-
-			label = new Label();
-			label.Text = "Last Backup Date";
-			label.Width = 100;
-			label.TextAlign = ContentAlignment.BottomLeft;
-			this.editPanel.Controls.Add(label);
-			this.lastBackup = new TextBox();
-			this.lastBackup.TextChanged += (sender, e) => SetDirty();
-			this.lastBackup.Width = 200;
-			this.editPanel.Controls.Add(this.lastBackup);
-
-			button = new Button();
-			button.Text = "Backup Diff";
-			button.Width = 150;
-			button.Click += (sender, e) => DoBackup(false);
-			this.editPanel.Controls.Add(button);
-
 			if (this.backups.Count == 0)
 			{
 				this.selectedIndex = -1;
-				foreach (Control ctrl in this.editPanel.Controls)
-				{
-					ctrl.Enabled = false;
-				}
+				this.editPanel.Enable(false);
 			}
 			else
 			{
@@ -281,9 +207,10 @@ namespace PrgBak
 					AddToList(backup);
 				}
 
-				LoadBackup(this.backups[0]);
+				this.editPanel.LoadBackup(this.backups[0]);
 				this.listView.FocusedItem = this.listView.Items[0];
 			}
+
 
 			var panel = new FlowLayoutPanel();
 			panel.FlowDirection = FlowDirection.TopDown;
@@ -292,7 +219,7 @@ namespace PrgBak
 			table.SetRow(panel, 1);
 			table.SetColumn(panel, 1);
 
-			button = new Button();
+			Button button = new Button();
 			button.Text = "New";
 			button.Width = 100;
 			button.Click += (sender, e) => New();
@@ -308,7 +235,7 @@ namespace PrgBak
 
 		private void HandleEditChange(string text, int index)
 		{
-			if (this.loading)
+			if (this.editPanel.IsLoading)
 			{
 				return;
 			}
@@ -324,16 +251,6 @@ namespace PrgBak
 			}
 		}
 
-		private void SetDirty()
-		{
-			if (this.loading)
-			{
-				return;
-			}
-
-			this.dirty = true;
-		}
-
 		private void DoBackup(bool full)
 		{
 			MessageBox.Show("Hello");
@@ -346,7 +263,7 @@ namespace PrgBak
 			AddToList(this.current);
 
 			this.selectedIndex = this.listView.FocusedItem.Index;
-			LoadBackup(this.backups[this.selectedIndex]);
+			this.editPanel.LoadBackup(this.backups[this.selectedIndex]);
 
 			foreach (Control ctrl in this.editPanel.Controls)
 			{
@@ -361,9 +278,9 @@ namespace PrgBak
 				return;
 			}
 
-			SetDirty();
+			this.editPanel.SetDirty();
 
-			this.loading = true;
+			this.editPanel.StartLoading();
 			this.backups.RemoveAt(this.selectedIndex);
 			this.listView.Items.RemoveAt(this.selectedIndex);
 
@@ -379,7 +296,7 @@ namespace PrgBak
 				this.selectedIndex--;
 			}
 
-			this.loading = false;
+			this.editPanel.EndLoading();
 
 			WritePrgBakXml();
 
@@ -410,14 +327,9 @@ namespace PrgBak
 			lvi.Tag = backup;
 			lvi.Text = backup.Name;
 
-			if (backup.Targets.Count > 0)
+			if (backup.Folder.Length > 0)
 			{
-				if (backup.Targets.Count > 1)
-				{
-					throw new ApplicationException("Backup " + backup.Name + " has " + 
-					                               backup.Targets.Count + " targets and it is not supported yet");
-				}
-				lvi.SubItems.Add((backup.Targets[0] as Target.Folder).FolderPath);
+				lvi.SubItems.Add(backup.Folder);
 			}
 			else
 			{
@@ -438,79 +350,253 @@ namespace PrgBak
 
 		private void HandleSelectedIndexChanged()
 		{
-			if (this.loading)
+			if (this.editPanel.IsLoading)
 			{
 				return;
 			}
 
-			if (this.dirty)
+			if (this.editPanel.Dirty)
 			{
 				ReflectChanges();
 				WritePrgBakXml(); // Save it instantly
 			}
 
 			this.selectedIndex = this.listView.FocusedItem.Index;
-			LoadBackup(this.backups[this.selectedIndex]);
+			this.editPanel.LoadBackup(this.backups[this.selectedIndex]);
 		}
 
-		private void LoadBackup(Backup backup)
-		{
-			try
-			{
-				this.loading = true;
-				this.backupName.Text = backup.Name;
-				this.sourceFolder.Text = backup.Folder;
-				if (backup.Targets.Count > 0)
-				{
-					this.destFolder.Text = (backup.Targets[0] as Target.Folder).FolderPath;
-				}
-
-				string extensions = "";
-				bool first = true;
-				foreach (var filter in backup.Filters)
-				{
-					if (first)
-					{
-						first = false;
-					}
-					else
-					{
-						extensions += ", ";
-					}
-					extensions += (filter as Filter.Extension).Ext;
-				}
-				this.extensions.Text = extensions;
-			}
-			finally
-			{
-				this.loading = false;
-			}
-
-		}
 
 		private void ReflectChanges()
 		{
 			Backup backup = this.backups[this.selectedIndex];
 
-			backup.Name = this.backupName.Text;
-			backup.Folder = this.sourceFolder.Text;
+			backup.Name = this.editPanel.BackupName;
+			backup.Folder = this.editPanel.SourceFolder;
 
 			backup.LastBackup = 0;
-			if (this.lastBackup.Text.Length > 0)
+			if (this.editPanel.LastBackup.Length > 0)
 			{
-				backup.LastBackup = long.Parse(this.lastBackup.Text);
+				backup.LastBackup = long.Parse(this.editPanel.LastBackup);
 			}
 
 			backup.ClearFilters();
 			char[] seps = {','};
-			string[] exts = this.extensions.Text.Split(seps);
+			string[] exts = this.editPanel.Extensions.Split(seps);
 			foreach (var ext in exts)
 			{
 				backup.AddFilter(new Filter.Extension(ext.Trim()));
 			}
 
 			backup.ClearTargets();
-			backup.AddTarget(new Target.Folder(this.destFolder.Text, true));
+			backup.AddTarget(new Target.Folder(this.editPanel.DestFolder, true));
+		}
+
+		protected internal class BackupEditPanel : FlowLayoutPanel
+		{
+			private TextBox backupName;
+			private TextBox sourceFolder;
+			private TextBox destFolder;
+			private TextBox extensions;
+			private TextBox lastBackup;
+			private bool dirty;
+			private bool loading;
+
+			protected internal BackupEditPanel(App app)
+			{
+				Label label;
+
+				label = new Label();
+				label.Text = "Name of the zip file";
+				label.Width = 200;
+				label.TextAlign = ContentAlignment.BottomLeft;
+				Controls.Add(label);
+
+				this.backupName = new TextBox();
+				this.backupName.TextChanged += (sender, e) => app.HandleEditChange(this.backupName.Text, -1);
+				this.backupName.TextChanged += (sender, e) => SetDirty();
+				this.backupName.Width = 300;
+				Controls.Add(this.backupName);
+
+				label = new Label();
+				label.Text = "Source Folder";
+				label.TextAlign = ContentAlignment.BottomLeft;
+				Controls.Add(label);
+				this.sourceFolder = new TextBox();
+				this.sourceFolder.TextChanged += (sender, e) => app.HandleEditChange(this.sourceFolder.Text, 1);
+				this.sourceFolder.TextChanged += (sender, e) => SetDirty();
+				this.sourceFolder.Width = 300;
+				Controls.Add(this.sourceFolder);
+
+				label = new Label();
+				label.Text = "Dest Folder";
+				label.TextAlign = ContentAlignment.BottomLeft;
+				Controls.Add(label);
+				this.destFolder = new TextBox();
+				this.destFolder.TextChanged += (sender, e) => SetDirty();
+				this.destFolder.Width = 300;
+				Controls.Add(this.destFolder);
+
+				label = new Label();
+				label.Text = "Extensions (comma separated)";
+				label.Width = 200;
+				label.TextAlign = ContentAlignment.BottomLeft;
+				Controls.Add(label);
+				this.extensions = new TextBox();
+				this.extensions.TextChanged += (sender, e) => SetDirty();
+				this.extensions.Width = 300;
+				Controls.Add(this.extensions);
+
+				Button button = new Button();
+				button.Text = "Do Full Backup";
+				button.Width = 150;
+				button.Click += (sender, e) => app.DoBackup(true);
+				Controls.Add(button);
+
+				label = new Label();
+				label.Text = "Last Backup Date";
+				label.Width = 100;
+				label.TextAlign = ContentAlignment.BottomLeft;
+				Controls.Add(label);
+				this.lastBackup = new TextBox();
+				this.lastBackup.TextChanged += (sender, e) => SetDirty();
+				this.lastBackup.Width = 200;
+				Controls.Add(this.lastBackup);
+
+				button = new Button();
+				button.Text = "Backup Diff";
+				button.Width = 150;
+				button.Click += (sender, e) => app.DoBackup(false);
+				Controls.Add(button);
+			}
+
+			protected internal string BackupName
+			{
+				get
+				{
+					return this.backupName.Text;
+				}
+			}
+
+			protected internal string SourceFolder
+			{
+				get
+				{
+					return this.sourceFolder.Text;
+				}
+			}
+
+			protected internal string LastBackup
+			{
+				get
+				{
+					return this.lastBackup.Text;
+				}
+			}
+
+			protected internal string DestFolder
+			{
+				get
+				{
+					return this.destFolder.Text;
+				}
+			}
+
+			protected internal string Extensions
+			{
+				get
+				{
+					return this.extensions.Text;
+				}
+			}
+
+			protected internal void Enable(bool enable)
+			{
+				foreach (Control ctrl in Controls)
+				{
+					ctrl.Enabled = enable;
+				}
+			}
+
+			protected internal void SetDirty()
+			{
+				if (this.loading)
+				{
+					return;
+				}
+
+				this.dirty = true;
+			}
+
+			protected internal void Undirty()
+			{
+				this.dirty = false;
+			}
+
+			protected internal bool Dirty
+			{
+				get
+				{
+					return this.dirty;
+				}
+			}
+
+			protected internal bool IsLoading
+			{
+				get
+				{
+					return this.loading;
+				}
+			}
+
+			protected internal void StartLoading()
+			{
+				this.loading = true;
+			}
+
+			protected internal void EndLoading()
+			{
+				this.loading = false;
+			}
+
+			protected internal void LoadBackup(Backup backup)
+			{
+				try
+				{
+					StartLoading();
+					this.backupName.Text = backup.Name;
+					this.sourceFolder.Text = backup.Folder;
+					if (backup.Targets.Count > 0)
+					{
+						this.destFolder.Text = (backup.Targets[0] as Target.Folder).FolderPath;
+					}
+					else
+					{
+						this.destFolder.Text = "";
+					}
+
+					string extensions = "";
+					bool first = true;
+					foreach (var filter in backup.Filters)
+					{
+						if (first)
+						{
+							first = false;
+						}
+						else
+						{
+							extensions += ", ";
+						}
+						extensions += (filter as Filter.Extension).Ext;
+					}
+					this.extensions.Text = extensions;
+				}
+				finally
+				{
+					EndLoading();
+				}
+
+			}
+
 		}
 	}
 }
