@@ -5,6 +5,7 @@
 using System;
 using System.IO;
 using System.Xml;
+using static PrgBak.Log;
 
 namespace PrgBak
 {
@@ -72,8 +73,10 @@ namespace PrgBak
 				Directory.CreateDirectory(dir);
 
 				var timepostfix = sub + now.Hour.ToString("00") + now.Minute.ToString("00") + now.Second.ToString("00");
-				File.Copy(zippath, dir + Path.DirectorySeparatorChar + 
-				          Path.GetFileNameWithoutExtension(zippath) + timepostfix + Path.GetExtension(zippath));
+				string dest = dir + Path.DirectorySeparatorChar + 
+				              Path.GetFileNameWithoutExtension(zippath) + timepostfix + Path.GetExtension(zippath);
+				Print("Copy " + zippath + " TO " + dest);
+				File.Copy(zippath, dest);
 			}
 		}
 	}

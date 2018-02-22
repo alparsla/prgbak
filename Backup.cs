@@ -40,6 +40,10 @@ namespace PrgBak
 				{
 					this.name = xr.Text;
 				}
+				else if (xr.IsElement("zipname"))
+				{
+					this.zipname = xr.Text;
+				}
 				else if (xr.IsElement("folder"))
 				{
 					this.folder = xr.Text;
@@ -87,6 +91,10 @@ namespace PrgBak
 			xw.WriteCData(this.name);
 			xw.WriteEndElement();
 
+			xw.WriteStartElement("zipname");
+			xw.WriteCData(this.zipname);
+			xw.WriteEndElement();
+
 			xw.WriteStartElement("folder");
 			xw.WriteCData(this.folder);
 			xw.WriteEndElement();
@@ -122,6 +130,10 @@ namespace PrgBak
 			set
 			{
 				this.name = value;
+				if (this.zipname == null)
+				{
+					this.zipname = name;
+				}
 			}
 		}
 
@@ -185,7 +197,7 @@ namespace PrgBak
 				return false;
 			}
 
-			Print("Start backup " + this.name + " to zip " + this.zipname);
+			Print("Start backing up " + this.name + " to zip " + this.zipname);
 
 			if (this.folder == null)
 			{
@@ -197,6 +209,7 @@ namespace PrgBak
 			Directory.CreateDirectory(App.HomePath + "temp");
 			FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.Write);
 			ZipArchive zip = new ZipArchive(fs, ZipArchiveMode.Create, true, Encoding.UTF8);
+			Print("Zipping " + this.folder + " to " + filename);
 			ZipFolder(zip, this.folder, time);
 			zip.Dispose();
 			fs.Flush();

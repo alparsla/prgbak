@@ -253,7 +253,37 @@ namespace PrgBak
 
 		private void DoBackup(bool full)
 		{
-			MessageBox.Show("Hello");
+			if (this.selectedIndex == -1)
+			{
+				return;
+			}
+
+			if (this.editPanel.Dirty)
+			{
+				ReflectChanges();
+			}
+
+			Backup backup = this.backups[this.selectedIndex];
+			try
+			{
+				Cursor.Current = Cursors.WaitCursor;
+				Application.DoEvents();
+				backup.Do(full ? 0 : backup.LastBackup);
+			}
+			catch (Exception e)
+			{
+				Print("Exception occured while backing up " + backup.Name + ": " + e);
+				MessageBox.Show(e.Message, "Error while backing up " + backup.Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+			finally
+			{
+				Cursor.Current = Cursors.Default;
+			}
+
+			// The following are for the updated lastBackup value
+			ReflectChanges();
+			WritePrgBakXml();
 		}
 
 		private void New()

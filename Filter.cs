@@ -65,7 +65,7 @@ namespace PrgBak
 
 			internal Extension(XmlCursor xr)
 			{
-				this.extension = xr.Text;
+				this.extension = "." + xr.Text;
 			}
 
 			public override void ToXml(XmlWriter xw)
