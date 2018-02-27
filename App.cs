@@ -240,13 +240,19 @@ namespace PrgBak
 				return;
 			}
 
+			ListViewItem item = this.listView.FocusedItem;
+			if (item == null)
+			{
+				item = this.listView.Items[this.selectedIndex];
+			}
+
 			if (index == -1)
 			{
-				this.listView.FocusedItem.Text = text;
+				item.Text = text;
 			}
 			else
 			{
-				this.listView.FocusedItem.SubItems[index].Text = text;
+				item.SubItems[index].Text = text;
 				this.listView.Refresh();
 			}
 		}
@@ -266,6 +272,7 @@ namespace PrgBak
 			Backup backup = this.backups[this.selectedIndex];
 			try
 			{
+				Log.SwitchToTabPage();
 				Cursor.Current = Cursors.WaitCursor;
 				Application.DoEvents();
 				backup.Do(full ? 0 : backup.LastBackup);
@@ -282,7 +289,8 @@ namespace PrgBak
 			}
 
 			// The following are for the updated lastBackup value
-			ReflectChanges();
+			this.editPanel.LastBackup = backup.LastBackup;
+			HandleEditChange(backup.LastBackupText, 2);
 			WritePrgBakXml();
 		}
 
@@ -357,7 +365,7 @@ namespace PrgBak
 			lvi.Tag = backup;
 			lvi.Text = backup.Name;
 
-			if (backup.Folder.Length > 0)
+			if (!string.IsNullOrWhiteSpace(backup.Folder))
 			{
 				lvi.SubItems.Add(backup.Folder);
 			}
@@ -368,7 +376,7 @@ namespace PrgBak
 
 			if (backup.LastBackup != 0)
 			{
-				lvi.SubItems.Add(DateTime.FromBinary(backup.LastBackup).ToLongDateString());
+				lvi.SubItems.Add(DateTime.FromBinary(backup.LastBackup).ToString());
 			}
 			else
 			{
@@ -404,9 +412,9 @@ namespace PrgBak
 			backup.Folder = this.editPanel.SourceFolder;
 
 			backup.LastBackup = 0;
-			if (this.editPanel.LastBackup.Length > 0)
+			if (this.editPanel.LastBackup != 0)
 			{
-				backup.LastBackup = long.Parse(this.editPanel.LastBackup);
+				backup.LastBackup = this.editPanel.LastBackup;
 			}
 
 			backup.ClearFilters();
@@ -515,11 +523,28 @@ namespace PrgBak
 				}
 			}
 
-			protected internal string LastBackup
+			protected internal long LastBackup
 			{
 				get
 				{
-					return this.lastBackup.Text;
+					if (string.IsNullOrWhiteSpace(this.lastBackup.Text))
+					{
+						return 0;
+					}
+
+					return DateTime.Parse(this.lastBackup.Text).ToBinary();
+				}
+
+				set
+				{
+					if (value == 0)
+					{
+						this.lastBackup.Text = "";
+					}
+					else
+					{
+						this.lastBackup.Text = DateTime.FromBinary(value).ToString();
+					}
 				}
 			}
 
@@ -619,6 +644,8 @@ namespace PrgBak
 						extensions += (filter as Filter.Extension).Ext;
 					}
 					this.extensions.Text = extensions;
+
+					this.LastBackup = backup.LastBackup;
 				}
 				finally
 				{

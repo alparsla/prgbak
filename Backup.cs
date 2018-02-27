@@ -150,6 +150,14 @@ namespace PrgBak
 			}
 		}
 
+		internal string LastBackupText
+		{
+			get
+			{
+				return DateTime.FromBinary(this.lastBackup).ToString();
+			}
+		}
+
 		internal string Folder
 		{
 			get
@@ -241,7 +249,7 @@ namespace PrgBak
 
 			foreach (var file in files)
 			{
-				if (File.GetLastWriteTimeUtc(file).ToFileTimeUtc() <= time)
+				if (File.GetLastWriteTime(file).ToBinary() <= time)
 				{
 					continue;
 				}
