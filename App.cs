@@ -18,7 +18,6 @@ namespace PrgBak
 		private static App appForm;
 
 		private IList<Backup> backups;
-		private Backup current;
 
 		// Form
 		private ListView listView;
@@ -296,9 +295,14 @@ namespace PrgBak
 
 		private void New()
 		{
-			this.current = new Backup();
-			this.backups.Add(this.current);
-			AddToList(this.current);
+			var backup = new Backup();
+			this.backups.Add(backup);
+			AddToList(backup);
+
+			foreach (var ext in Filter.Extension.defaultExtensions)
+			{
+				backup.AddFilter(new Filter.Extension(ext));
+			}
 
 			this.selectedIndex = this.listView.FocusedItem.Index;
 			this.editPanel.LoadBackup(this.backups[this.selectedIndex]);
