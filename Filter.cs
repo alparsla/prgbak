@@ -53,6 +53,16 @@ namespace PrgBak
 			internal Extension(string extension)
 			{
 				this.extension = extension.ToLowerInvariant();
+
+				// Tolerate known styles
+				if (this.extension.StartsWith("."))
+				{
+					this.extension = this.extension.Substring(1);
+				}
+				else if (this.extension.StartsWith("*."))
+				{
+					this.extension = this.extension.Substring(2);
+				}
 			}
 
 			internal string Ext
@@ -63,9 +73,8 @@ namespace PrgBak
 				}
 			}
 
-			internal Extension(XmlCursor xr)
+			internal Extension(XmlCursor xr) : this(xr.Text)
 			{
-				this.extension = "." + xr.Text;
 			}
 
 			public override void ToXml(XmlWriter xw)
@@ -77,7 +86,7 @@ namespace PrgBak
 
 			public override bool Include(string filename)
 			{
-				return filename.ToLowerInvariant().EndsWith(this.extension);
+				return filename.ToLowerInvariant().EndsWith("." + this.extension);
 			}
 		}
 
