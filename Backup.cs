@@ -261,7 +261,7 @@ namespace PrgBak
 					continue;
 				}
 
-				if (Eliminate(file))
+				if (Eliminate(file, false))
 				{
 					continue;
 				}
@@ -277,7 +277,7 @@ namespace PrgBak
 			var dirs = Directory.GetDirectories(folder);
 			foreach (var dir in dirs)
 			{
-				if (Eliminate(dir))
+				if (Eliminate(dir, true))
 				{
 					continue;
 				}
@@ -286,11 +286,16 @@ namespace PrgBak
 			}
 		}
 
-		private bool Eliminate(string filename)
+		private bool Eliminate(string filename, bool dir)
 		{
 			bool eliminate = true;
 			foreach (var filter in this.filters)
 			{
+				if (dir && !filter.CheckDirectory)
+				{
+					return false;	
+				}
+
 				if (filter.MustExclude(filename))
 				{
 					return true;

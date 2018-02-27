@@ -30,6 +30,14 @@ namespace PrgBak
 			return false;
 		}
 
+		public virtual bool CheckDirectory
+		{
+			get
+			{
+				return true;
+			}
+		}
+
 		public abstract void ToXml(XmlWriter xw);
 
 		internal static Filter FromXml(XmlCursor xr)
@@ -95,6 +103,13 @@ namespace PrgBak
 				xw.WriteEndElement();
 			}
 
+			public override bool CheckDirectory
+			{
+				get
+				{
+					return false;
+				}
+			}
 			public override bool Include(string filename)
 			{
 				return filename.ToLowerInvariant().EndsWith("." + this.extension);
