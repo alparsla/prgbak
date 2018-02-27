@@ -274,7 +274,7 @@ namespace PrgBak
 				Log.SwitchToTabPage();
 				Cursor.Current = Cursors.WaitCursor;
 				Application.DoEvents();
-				backup.Do(full ? 0 : backup.LastBackup);
+				backup.Do(full ? long.MinValue : backup.LastBackup);
 			}
 			catch (Exception e)
 			{
@@ -378,7 +378,7 @@ namespace PrgBak
 				lvi.SubItems.Add("<empty path>");
 			}
 
-			if (backup.LastBackup != 0)
+			if (backup.LastBackup != long.MinValue)
 			{
 				lvi.SubItems.Add(DateTime.FromBinary(backup.LastBackup).ToString());
 			}
@@ -415,7 +415,7 @@ namespace PrgBak
 			backup.Name = this.editPanel.BackupName;
 			backup.Folder = this.editPanel.SourceFolder;
 
-			backup.LastBackup = 0;
+			backup.LastBackup = long.MinValue;
 			if (this.editPanel.LastBackup != 0)
 			{
 				backup.LastBackup = this.editPanel.LastBackup;
@@ -541,7 +541,7 @@ namespace PrgBak
 
 				set
 				{
-					if (value == 0)
+					if (value == long.MinValue)
 					{
 						this.lastBackup.Text = "";
 					}

@@ -25,6 +25,7 @@ namespace PrgBak
 		{
 			this.filters = new List<Filter>();
 			this.targets = new List<Target>();
+			this.lastBackup = long.MinValue;
 		}
 
 		internal Backup(XmlCursor xr) : this()
@@ -154,6 +155,11 @@ namespace PrgBak
 		{
 			get
 			{
+				if (this.lastBackup == long.MinValue)
+				{
+					return "";
+				}
+
 				return DateTime.FromBinary(this.lastBackup).ToString();
 			}
 		}
@@ -249,7 +255,8 @@ namespace PrgBak
 
 			foreach (var file in files)
 			{
-				if (File.GetLastWriteTime(file).ToBinary() <= time)
+				var lastWriteTime = File.GetLastWriteTime(file).ToBinary();
+				if (lastWriteTime <= time)
 				{
 					continue;
 				}
@@ -261,6 +268,7 @@ namespace PrgBak
 
 				var bytes = File.ReadAllBytes(file);
 				var ze = zip.CreateEntry(subdir + Path.GetFileName(file), CompressionLevel.Optimal);
+				ze.LastWriteTime = DateTime.FromBinary(lastWriteTime);
 				var stream = ze.Open();
 				stream.Write(bytes, 0, bytes.Length);
 				stream.Close();
