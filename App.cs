@@ -345,7 +345,7 @@ namespace PrgBak
 			if (this.selectedIndex != -1)
 			{
 				this.listView.FocusedItem = this.listView.Items[this.selectedIndex];
-				ReflectChanges();
+				this.editPanel.LoadBackup(this.backups[this.selectedIndex]);
 			}
 			else
 			{
