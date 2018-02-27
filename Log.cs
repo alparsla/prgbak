@@ -12,8 +12,9 @@ namespace PrgBak
 	public class Log
 	{
 		private static FileStream stream;
+		private static TabPage tabPage;
 		private static ListBox listbox;
-		
+
 		static Log()
 		{
 			stream = new FileStream(App.HomePath + "prgbak.log", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
@@ -28,24 +29,31 @@ namespace PrgBak
 			{
 				offset = (int)stream.Seek(0, SeekOrigin.End);
 				stream.Write(bytes, 0, bytes.Length);
+				stream.Flush();
 			}
 
 			if (listbox != null)
 			{
 				listbox.Items.Add(new Line(offset, bytes.Length));
+				listbox.SelectedIndex = listbox.Items.Count - 1;
 			}
 		}
 		
 		internal static void AddLogTab(TabControl tab)
 		{
-			var page = new TabPage("Log");
-			tab.TabPages.Add(page);
+			tabPage = new TabPage("Log");
+			tab.TabPages.Add(tabPage);
 			
 			listbox = new ListBox();
 			listbox.Dock = DockStyle.Fill;
-			page.Controls.Add(listbox);
+			tabPage.Controls.Add(listbox);
 
 			FillLog();
+		}
+
+		internal static void SwitchToTabPage()
+		{
+			(tabPage.Parent as TabControl).SelectedTab = tabPage;
 		}
 		
 		static void FillLog()
@@ -55,8 +63,7 @@ namespace PrgBak
 			stream.Read(wholeFile, 0, wholeFile.Length);
 
 			int start = 0;
-			int i = 0;
-			for (; i < wholeFile.Length; ++i)
+			for (int i = 0; i < wholeFile.Length; ++i)
 			{
 				var b = wholeFile[i];
 				switch (b)
@@ -75,7 +82,7 @@ namespace PrgBak
 			listbox.SelectedIndex = listbox.Items.Count - 1;
 			listbox.TopIndex = listbox.Items.Count - 1;
 		}
-		
+
 		class Line
 		{
 			private int offset;
