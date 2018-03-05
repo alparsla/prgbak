@@ -59,12 +59,12 @@ namespace PrgBak
 			internal readonly static string[] defaultExtensions =
 				{"ada", "asax", "asmx", "asp", "aspx", "awd", "awk", "bas", 
 				 "c", "cbl", "cc", "clj", "cob", "cobol", "coffee", "cpp", 
-				 "cs", "csproj", "css", "cxx", "d", "doc", "docx", "dsp", "el", 
+				 "cs", "csproj", "css", "cxx", "d", "def", "doc", "docx", "dsp", "el", 
 				 "f", "for", "go", "groovy", "h", "htm", "html", "hx", "hxml", 
 				 "inc ", "java", "js", "jsp", "less", "lisp", "lua", "m4", "mak", 
 				 "make", "ml", "pas", "perl", "php", "pl", "properties ", "py", 
 				 "r", "rake", "rc", "rtf", "rust", "sass", "scm ", "sh", "sln", 
-				 "sql", "swift", "tcl", "tex", "tlh", "ts", "txt", "vb", "vbp", 
+				 "sql", "swift", "tcl", "tex", "tlb", "tlh", "ts", "txt", "vb", "vbp", 
 				"vbproj", "vbs", "vcxproj", "wsdl", "xaml", "xml", "yaml"};
 
 			private string extension;
