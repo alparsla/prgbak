@@ -219,7 +219,16 @@ namespace PrgBak
 				return false;
 			}
 
-			string filename = App.HomePath + "temp" + Path.DirectorySeparatorChar + this.zipname + ".zip";
+			string zipname = this.zipname;
+			if (time != long.MinValue)
+			{
+				var now = DateTime.FromBinary(time);
+				string sub = now.Year.ToString("0000") + now.Month.ToString("00") + now.Day.ToString("00");
+				var timepostfix = sub + now.Hour.ToString("00") + now.Minute.ToString("00") + now.Second.ToString("00");
+				zipname += timepostfix + "-";
+			}
+
+			string filename = App.HomePath + "temp" + Path.DirectorySeparatorChar + zipname + ".zip";
 			Directory.CreateDirectory(App.HomePath + "temp");
 			FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.Write);
 			ZipArchive zip = new ZipArchive(fs, ZipArchiveMode.Create, true, Encoding.UTF8);
